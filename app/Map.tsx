@@ -41,17 +41,20 @@ export default function Map() {
 	}, []);
 
 	// every two seconds,  the /api/getRoute/route.ts API
+	const fetchData = async () => {
+		const response = await fetch('/api/getRoute', {
+			cache: 'no-store',
+		});
+		const data = await response.json();
+		setBus19Position(data.position.bus19);
+		setBus19Data(data.data.bus19);
+		setBus9Position(data.position.bus9);
+		setBus9Data(data.data.bus9);
+	};
+
 	useEffect(() => {
-		const interval = setInterval(async () => {
-			const response = await fetch('/api/getRoute', {
-				cache: 'no-store',
-			});
-			const data = await response.json();
-			setBus19Position(data.position.bus19);
-			setBus19Data(data.data.bus19);
-			setBus9Position(data.position.bus9);
-			setBus9Data(data.data.bus9);
-		}, 10000);
+		fetchData();
+		const interval = setInterval(fetchData, 10000);
 
 		return () => clearInterval(interval);
 	}, []);
