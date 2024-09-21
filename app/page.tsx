@@ -1,101 +1,65 @@
-import Image from "next/image";
+'use client';
+import { MapContainer, Marker, TileLayer } from 'react-leaflet';
+import Image from 'next/image';
+import LocationMarker, { Bus19Marker, Bus9Marker } from './LocationMarker';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+	const [bus19Position, setBus19Position] = useState<
+		| {
+				lat: number;
+				lng: number;
+		  }[]
+		| null
+	>();
+	const [bus19Data, setBus19Data] = useState(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+	// now for bus 9
+	const [bus9Position, setBus9Position] = useState(null);
+	const [bus9Data, setBus9Data] = useState(null);
+
+	// every two seconds, call the /api/getRoute/route.ts API
+	useEffect(() => {
+		const interval = setInterval(async () => {
+			const response = await fetch('/api/getRoute');
+			const data = await response.json();
+			setBus19Position(data.position.bus19);
+			setBus19Data(data.data.bus19);
+			setBus9Position(data.position.bus9);
+			setBus9Data(data.data.bus9);
+		}, 2000);
+
+		return () => clearInterval(interval);
+	}, []);
+
+	// use effect that tracks positions of both buses
+	useEffect(() => {
+		if (bus19Position && bus9Position) {
+			console.log('Bus 19:', bus19Position[0].lat, bus19Position[0].lng);
+			console.log('Bus 9:', bus9Position);
+		}
+
+		// now useing lat and long to display the buses on the map
+		// console.log('Bus 19:', bus19Position);
+	}, [bus19Position, bus9Position]);
+
+	return (
+		<div className="w-screen h-screen overflow-hidden">
+			<MapContainer
+				zoom={13}
+				center={{ lat: 43.015638766275465, lng: -81.3394222 }}
+				style={{ height: '100%', backgroundColor: 'black', width: '100%' }}
+				scrollWheelZoom={true}
+			>
+				<TileLayer
+					// attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+					url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+				/>
+				{bus19Position && bus19Data && <Bus19Marker bus19Position={bus19Position} data={bus19Data} />}
+				{bus9Position && bus9Data && <Bus9Marker bus9Position={bus9Position} data={bus9Data} />}
+
+				<LocationMarker />
+			</MapContainer>
+		</div>
+	);
 }
