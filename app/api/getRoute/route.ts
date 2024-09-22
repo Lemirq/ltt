@@ -34,7 +34,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
 	// fetch data from the API
-	const response = await fetch('http://gtfs.ltconline.ca/Vehicle/VehiclePositions.json');
+	const response = await fetch('http://gtfs.ltconline.ca/Vehicle/VehiclePositions.json', {
+		cache: 'no-store',
+	});
 	const data = await response.json();
 	const bus19 = data.entity.filter((entity: Entity) => entity.vehicle && entity.vehicle.trip && entity.vehicle.trip.route_id === '19');
 	const bus9 = data.entity.filter((entity: Entity) => entity.vehicle && entity.vehicle.trip && entity.vehicle.trip.route_id === '09');
