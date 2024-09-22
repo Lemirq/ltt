@@ -30,11 +30,11 @@ export default function Map() {
 	// now for bus 9
 	const [bus9Position, setBus9Position] = useState(null);
 	const [bus9Data, setBus9Data] = useState(null);
-	const [timer, setTimer] = useState(10);
+	const [timer, setTimer] = useState(30);
 
 	useEffect(() => {
 		const timerInterval = setInterval(() => {
-			setTimer((prevTimer) => (prevTimer === 0 ? 10 : prevTimer - 1));
+			setTimer((prevTimer) => (prevTimer === 0 ? 30 : prevTimer - 1));
 		}, 1000);
 
 		return () => clearInterval(timerInterval);
